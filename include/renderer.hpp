@@ -4,6 +4,7 @@
 #include <include/cef_render_handler.h>
 #include "download_handler.hpp"
 #include "audio_handler.hpp"
+#include <utility>
 
 class WebRenderHandler;
 class WebBrowserClient;
@@ -38,13 +39,19 @@ public:
 	virtual void UpdateDragCursor(CefRefPtr<CefBrowser> browser,DragOperation operation) override;
 	virtual void OnScrollOffsetChanged(CefRefPtr<CefBrowser> browser,double x,double y) override;
 	virtual void OnImeCompositionRangeChanged(CefRefPtr<CefBrowser> browser,const CefRange &selected_range,const RectList &character_bounds) override;
-	void SetDataPtr(void *ptr) {m_dataPtr = ptr;}
+	void SetImageData(void *ptr,uint32_t w,uint32_t h);
 	void SetUserData(void *userData) {m_userData = userData;;}
 	void *GetUserData() {return m_userData;}
 	void SetRefPtr(cef::CWebRenderHandler *ptr) {m_refPtr = ptr;}
 	IMPLEMENT_REFCOUNTING(WebRenderHandler);
 private:
-	void *m_dataPtr = nullptr;
+	struct ImageData
+	{
+		void *dataPtr = nullptr;
+		uint32_t width = 0;
+		uint32_t height = 0;
+	} m_imageData;
+
 	cef::BrowserProcess *m_process = nullptr;
 	cef::CWebRenderHandler *m_refPtr = nullptr;
 	void *m_userData = nullptr;

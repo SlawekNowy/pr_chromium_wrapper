@@ -110,3 +110,5 @@ set(TARGET_PROPERTIES LINKER_LANGUAGE CXX)
 set_target_properties(${PROJ_NAME} PROPERTIES ${TARGET_PROPERTIES})
 
 add_subdirectory("subprocess")
+
+add_dependencies(pr_chromium_subprocess ${PROJ_NAME})

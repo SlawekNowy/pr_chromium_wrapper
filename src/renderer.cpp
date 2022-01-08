@@ -3,7 +3,8 @@
 #include "browser_render_process_handler.hpp"
 #include "browser_load_handler.hpp"
 #include "browserclient.hpp"
-
+#include <atlstr.h>
+#pragma optimize("",off)
 WebRenderHandler::WebRenderHandler(
 	cef::BrowserProcess *process,
 	void(*fGetRootScreenRect)(cef::CWebRenderHandler*,int&,int&,int&,int&),
@@ -43,16 +44,34 @@ void WebRenderHandler::OnPopupSize(CefRefPtr<CefBrowser> browser,const CefRect &
 {
 
 }
+void WebRenderHandler::SetImageData(void *ptr,uint32_t w,uint32_t h)
+{
+	m_imageData.dataPtr = ptr;
+	m_imageData.width = w;
+	m_imageData.height = h;
+}
 void WebRenderHandler::OnPaint(CefRefPtr<CefBrowser> browser,PaintElementType type,const RectList &dirtyRects,const void *buffer,int width,int height)
 {
-	if(!m_dataPtr)
+	if(!m_imageData.dataPtr || m_imageData.width != width || m_imageData.height != height)
 		return;
 	auto host = browser->GetHost();
 	auto *client = static_cast<WebBrowserClient*>(host->GetClient().get());
 	auto bLoaded = (client != nullptr && client->HasPageLoadingStarted()) ? true : false;
 	if(bLoaded == false)
 		return;
-	memcpy(m_dataPtr,buffer,width *height *4u);
+	auto *srcPtr = static_cast<const uint8_t*>(buffer);
+	auto *dstPtr = static_cast<uint8_t*>(m_imageData.dataPtr);
+	constexpr uint8_t szPerPixel = 4u;
+	for(auto &r : dirtyRects)
+	{
+		auto offset = r.y *width +r.x;
+		for(auto i=decltype(r.height){0};i<r.height;++i)
+		{
+			memcpy(dstPtr +offset *szPerPixel,srcPtr +offset *szPerPixel,r.width *szPerPixel);
+			offset += width;
+		}
+	}
+	
 	/*
 	vk::SubresourceLayout layout {};
 	size_t pos = 0;
@@ -99,7 +118,7 @@ void WebRenderHandler::OnImeCompositionRangeChanged(CefRefPtr<CefBrowser> browse
 }
 
 static CefRefPtr<cef::BrowserProcess> g_process = nullptr;
-static bool initialize_chromium(bool subProcess)
+static bool initialize_chromium(bool subProcess,const char *pathToSubProcess,const char *cachePath)
 {
 	static auto initialized = false;
 	if(initialized == true)
@@ -118,7 +137,8 @@ static bool initialize_chromium(bool subProcess)
 	CefSettings settings {};
 	settings.windowless_rendering_enabled = true;
 	settings.multi_threaded_message_loop = false;
-	CefString(&settings.browser_subprocess_path).FromASCII("E:/projects/pragma/build_winx64/install/modules/chromium/pr_chromium_subprocess.exe");
+	CefString(&settings.cache_path).FromASCII(cachePath);
+	CefString(&settings.browser_subprocess_path).FromASCII(pathToSubProcess);
 	settings.no_sandbox = true;
 	if(CefInitialize(args,settings,g_process,nullptr) == false)
 	{
@@ -177,9 +197,9 @@ namespace cef
 
 extern "C"
 {
-	DLL_PR_CHROMIUM bool pr_chromium_initialize()
+	DLL_PR_CHROMIUM bool pr_chromium_initialize(const char *pathToSubProcess,const char *cachePath)
 	{
-		return initialize_chromium(false);
+		return initialize_chromium(false,pathToSubProcess,cachePath);
 	}
 	DLL_PR_CHROMIUM void pr_chromium_close()
 	{
@@ -187,7 +207,7 @@ extern "C"
 	}
 	DLL_PR_CHROMIUM bool pr_chromium_subprocess()
 	{
-		if(initialize_chromium(true) == false)
+		if(initialize_chromium(true,"","") == false)
 			return false;
 		close_chromium();
 		return true;
@@ -262,9 +282,15 @@ extern "C"
 	{
 		return static_cast<WebBrowserClient*>((*browser)->GetHost()->GetClient().get())->GetUserData();
 	}
+	DLL_PR_CHROMIUM void pr_chromium_browser_was_resized(cef::CWebBrowser *browser)
+	{
+		(*browser)->GetHost()->WasResized();
+	}
 
-
-	DLL_PR_CHROMIUM void pr_chromium_render_handler_set_data_ptr(cef::CWebRenderHandler *renderHandler,void *ptr) {(*renderHandler)->SetDataPtr(ptr);}
+	DLL_PR_CHROMIUM void pr_chromium_render_handler_set_image_data(cef::CWebRenderHandler *renderHandler,void *ptr,uint32_t w,uint32_t h)
+	{
+		(*renderHandler)->SetImageData(ptr,w,h);
+	}
 	// Browser
 	DLL_PR_CHROMIUM void pr_chromium_browser_load_url(cef::CWebBrowser *browser,const char *url) {(*browser)->GetMainFrame()->LoadURL(url);}
 	DLL_PR_CHROMIUM bool pr_chromium_browser_can_go_back(cef::CWebBrowser *browser) {return (*browser)->CanGoBack();}
@@ -356,3 +382,4 @@ extern "C"
 		mainFrame->ExecuteJavaScript(js,url ? url : mainFrame->GetURL(),0);
 	}
 };
+#pragma optimize("",on)
