@@ -221,7 +221,9 @@ extern "C"
 
 	DLL_PR_CHROMIUM cef::CWebBrowserClient* pr_chromium_browser_client_create(cef::CWebRenderHandler *renderHandler)
 	{
-		auto browserClient = CefRefPtr<WebBrowserClient>{new WebBrowserClient{renderHandler->get(),new cef::WebAudioHandler{},new cef::WebDownloadHandler{}}};
+		cef::WebAudioHandler *audioHandler = nullptr;
+		// audioHandler = new cef::WebAudioHandler{}; // Not yet fully implemented
+		auto browserClient = CefRefPtr<WebBrowserClient>{new WebBrowserClient{renderHandler->get(),audioHandler,new cef::WebDownloadHandler{}}};
 		return new cef::CWebBrowserClient{browserClient};
 	}
 	DLL_PR_CHROMIUM void pr_chromium_browser_client_release(cef::CWebBrowserClient *browserClient)
