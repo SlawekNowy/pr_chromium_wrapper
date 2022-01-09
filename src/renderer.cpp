@@ -62,6 +62,15 @@ void WebRenderHandler::OnPaint(CefRefPtr<CefBrowser> browser,PaintElementType ty
 	auto *srcPtr = static_cast<const uint8_t*>(buffer);
 	auto *dstPtr = static_cast<uint8_t*>(m_imageData.dataPtr);
 	constexpr uint8_t szPerPixel = 4u;
+	if(dirtyRects.size() == 1)
+	{
+		auto &r = dirtyRects[0];
+		if(r.x == 0 && r.y == 0 && r.width == width && r.height == height)
+		{
+			memcpy(dstPtr,srcPtr,width *height *szPerPixel);
+			return;
+		}
+	}
 	for(auto &r : dirtyRects)
 	{
 		auto offset = r.y *width +r.x;
@@ -71,34 +80,6 @@ void WebRenderHandler::OnPaint(CefRefPtr<CefBrowser> browser,PaintElementType ty
 			offset += width;
 		}
 	}
-	
-	/*
-	vk::SubresourceLayout layout {};
-	size_t pos = 0;
-	for(auto y=decltype(height){0};y<height;++y)
-	{
-		auto *row = ptr;
-		for(auto x=decltype(width){0};x<width;++x)
-		{
-			auto *pxSrc = reinterpret_cast<const uint8_t*>(buffer);
-			auto *px = row;
-			px[2] = pxSrc[pos++];
-			px[1] = pxSrc[pos++];
-			px[0] = pxSrc[pos++];
-			px[3] = pxSrc[pos++] *alphaFactor;
-			row += 4;
-		}
-		ptr += layout.rowPitch;
-	}
-	map->Flush();
-	map = nullptr;*/
-	//m_texture->GetImage()->MapMemory(static_cast<const uint8_t*>(buffer),true);
-
-	//std::cout<<"OnPaint..."<<std::endl;
-	/*Ogre::HardwarePixelBufferSharedPtr texBuf = m_renderTexture->getBuffer();
-	texBuf->lock(Ogre::HardwareBuffer::HBL_DISCARD);
-	memcpy(texBuf->getCurrentLock().data, buffer, width*height*4);
-	texBuf->unlock();*/
 }
 bool WebRenderHandler::StartDragging(CefRefPtr<CefBrowser> browser,CefRefPtr<CefDragData> drag_data,DragOperationsMask allowed_ops,int x,int y)
 {
@@ -255,10 +236,21 @@ extern "C"
 	{
 		return (*browserClient)->GetUserData();
 	}
-	DLL_PR_CHROMIUM void pr_chromium_browser_client_set_download_complete_callback(cef::CWebBrowserClient *browserClient,void(*onComplete)(cef::CWebBrowserClient*,const char*))
+	DLL_PR_CHROMIUM void pr_chromium_browser_client_set_download_start_callback(
+		cef::CWebBrowserClient *browserClient,void(*onStart)(cef::CWebBrowserClient*,uint32_t,const char*)
+	)
 	{
-		static_cast<cef::WebDownloadHandler*>((*browserClient)->GetDownloadHandler().get())->SetCompleteCallback([onComplete,browserClient](const std::string &fileName) {
-			onComplete(browserClient,fileName.c_str());
+		static_cast<cef::WebDownloadHandler*>((*browserClient)->GetDownloadHandler().get())->SetStartCallback([onStart,browserClient](uint32_t id,const std::string &fileName) {
+			onStart(browserClient,id,fileName.c_str());
+		});
+	}
+	DLL_PR_CHROMIUM void pr_chromium_browser_client_set_download_update_callback(
+		cef::CWebBrowserClient *browserClient,void(*onUpdate)(cef::CWebBrowserClient*,uint32_t,cef::WebDownloadHandler::DownloadInfo::State,int32_t)
+	)
+	{
+		static_cast<cef::WebDownloadHandler*>((*browserClient)->GetDownloadHandler().get())->SetUpdateCallback(
+			[onUpdate,browserClient](uint32_t id,cef::WebDownloadHandler::DownloadInfo::State state,int32_t percentage) {
+			onUpdate(browserClient,id,state,percentage);
 		});
 	}
 	DLL_PR_CHROMIUM void pr_chromium_browser_client_set_download_location(cef::CWebBrowserClient *browserClient,const char *location)
