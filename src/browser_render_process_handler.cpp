@@ -8,6 +8,12 @@ namespace cef
 	extern std::vector<JavaScriptFunction> g_globalJavaScriptFunctions;
 };
 
+#include <iostream>
+cef::BrowserRenderProcessHandler::~BrowserRenderProcessHandler()
+{
+	std::cout<<"BrowserRenderProcessHandler destroyed!"<<std::endl;
+}
+
 CefRefPtr<CefV8Handler> cef::BrowserRenderProcessHandler::GetV8Handler() {return m_v8Handler;}
 CefRefPtr<CefV8Context> cef::BrowserRenderProcessHandler::GetContext() {return m_context;}
 

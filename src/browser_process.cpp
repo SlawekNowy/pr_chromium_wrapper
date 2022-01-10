@@ -5,4 +5,10 @@ cef::BrowserProcess::BrowserProcess()
 	: m_renderProcessHandler(new BrowserRenderProcessHandler())
 {}
 
+#include <iostream>
+cef::BrowserProcess::~BrowserProcess()
+{
+	std::cout<<"BrowserProcess destroyed!"<<std::endl;
+}
+
 CefRefPtr<CefRenderProcessHandler> cef::BrowserProcess::GetRenderProcessHandler() {return m_renderProcessHandler;}

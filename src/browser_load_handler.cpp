@@ -1,6 +1,11 @@
 #include "browser_load_handler.hpp"
 #include "browserclient.hpp"
 
+#include <iostream>
+cef::BrowserLoadHandler::~BrowserLoadHandler()
+{
+	std::cout<<"BrowserLoadHandler destroyed!"<<std::endl;
+}
 void cef::BrowserLoadHandler::OnLoadingStateChange(CefRefPtr<CefBrowser> browser,bool isLoading,bool canGoBack,bool canGoForward)
 {
 }

@@ -13,7 +13,11 @@ WebRenderHandler::WebRenderHandler(
 )
 	: m_process(process),m_fGetRootScreenRect{fGetRootScreenRect},m_fGetViewRect{fGetViewRect},m_fGetScreenPoint{fGetScreenPoint}
 {}
-WebRenderHandler::~WebRenderHandler() {}
+#include <iostream>
+WebRenderHandler::~WebRenderHandler()
+{
+	std::cout<<"WebRenderHandler destroyed!"<<std::endl;
+}
 bool WebRenderHandler::GetRootScreenRect(CefRefPtr<CefBrowser> browser,CefRect &rect)
 {
 	int x,y,w,h;
@@ -118,6 +122,8 @@ static bool initialize_chromium(bool subProcess,const char *pathToSubProcess,con
 	CefSettings settings {};
 	settings.windowless_rendering_enabled = true;
 	settings.multi_threaded_message_loop = false;
+	// settings.user_agent
+	// settings.user_agent_product
 	CefString(&settings.cache_path).FromASCII(cachePath);
 	CefString(&settings.browser_subprocess_path).FromASCII(pathToSubProcess);
 	settings.no_sandbox = true;
@@ -128,10 +134,12 @@ static bool initialize_chromium(bool subProcess,const char *pathToSubProcess,con
 	}
 	return true;
 }
-
+#include <thread>
 static void close_chromium()
 {
 	g_process = nullptr;
+	CefShutdown();
+	//std::this_thread::sleep_for(std::chrono::seconds{1});
 }
 
 #include "util_javascript.hpp"
@@ -175,7 +183,7 @@ namespace cef
 		IsRepeat = CapsLockOn<<13u
 	};
 };
-
+#include <thread>
 extern "C"
 {
 	DLL_PR_CHROMIUM bool pr_chromium_initialize(const char *pathToSubProcess,const char *cachePath)
@@ -222,8 +230,9 @@ extern "C"
 	DLL_PR_CHROMIUM cef::CWebBrowserClient* pr_chromium_browser_client_create(cef::CWebRenderHandler *renderHandler)
 	{
 		cef::WebAudioHandler *audioHandler = nullptr;
+		auto *lifeSpanHandler = new cef::WebLifeSpanHandler{};
 		// audioHandler = new cef::WebAudioHandler{}; // Not yet fully implemented
-		auto browserClient = CefRefPtr<WebBrowserClient>{new WebBrowserClient{renderHandler->get(),audioHandler,new cef::WebDownloadHandler{}}};
+		auto browserClient = CefRefPtr<WebBrowserClient>{new WebBrowserClient{renderHandler->get(),audioHandler,lifeSpanHandler,new cef::WebDownloadHandler{}}};
 		return new cef::CWebBrowserClient{browserClient};
 	}
 	DLL_PR_CHROMIUM void pr_chromium_browser_client_release(cef::CWebBrowserClient *browserClient)
@@ -266,11 +275,32 @@ extern "C"
 		windowInfo.SetAsWindowless(nullptr);
 		CefBrowserSettings browserSettings;
 		auto browser = CefRefPtr<CefBrowser>{CefBrowserHost::CreateBrowserSync(windowInfo,*browserClient,initialUrl,browserSettings,nullptr,nullptr)};
-		return new cef::CWebBrowser{browser};
+		auto *pBrowser = new cef::CWebBrowser{browser};
+
+		auto *client = static_cast<WebBrowserClient*>((*pBrowser)->GetHost()->GetClient().get());
+		auto *lifeSpanHandler = static_cast<cef::WebLifeSpanHandler*>(client->GetLifeSpanHandler().get());
+		while(lifeSpanHandler->GetAfterCreated() == false) // Ensure browser is ready
+			CefDoMessageLoopWork();
+		return pBrowser;
 	}
 	DLL_PR_CHROMIUM void pr_chromium_browser_release(cef::CWebBrowser *browser)
 	{
+		//(*browser)->GetHost()->CloseBrowser(true);
+		bool closed = false;
+		while (!closed) {
+			closed = (*browser)->GetHost()->TryCloseBrowser();
+			CefDoMessageLoopWork();
+		}
+
+		//auto *client = static_cast<WebBrowserClient*>((*browser)->GetHost()->GetClient().get());
+		//auto *lifeSpanHandler = static_cast<cef::WebLifeSpanHandler*>(client->GetLifeSpanHandler().get());
+		//while(lifeSpanHandler->GetBeforeClose() == false) // Ensure browser is closed
+		//	CefDoMessageLoopWork();
 		delete browser;
+	}
+	DLL_PR_CHROMIUM void pr_chromium_browser_close(cef::CWebBrowser *browser)
+	{
+		(*browser)->GetHost()->CloseBrowser(true);
 	}
 	DLL_PR_CHROMIUM void* pr_chromium_browser_get_user_data(cef::CWebBrowser *browser)
 	{

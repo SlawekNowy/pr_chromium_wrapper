@@ -10,6 +10,7 @@ namespace cef
 		: public CefRenderProcessHandler
 	{
 	public:
+		virtual ~BrowserRenderProcessHandler() override;
 		virtual void OnContextCreated(CefRefPtr<CefBrowser> browser,CefRefPtr<CefFrame> frame,CefRefPtr<CefV8Context> context) override;
 		virtual void OnWebKitInitialized() override;
 		virtual CefRefPtr<CefLoadHandler> GetLoadHandler() override;

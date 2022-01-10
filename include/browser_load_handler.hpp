@@ -9,6 +9,7 @@ namespace cef
 		: public CefLoadHandler
 	{
 	public:
+		virtual ~BrowserLoadHandler() override;
 		virtual void OnLoadingStateChange(CefRefPtr<CefBrowser> browser,bool isLoading,bool canGoBack,bool canGoForward) override;
 		virtual void OnLoadStart(CefRefPtr<CefBrowser> browser,CefRefPtr<CefFrame> frame,TransitionType transition_type) override;
 		virtual void OnLoadEnd(CefRefPtr<CefBrowser> browser,CefRefPtr<CefFrame> frame,int httpStatusCode) override;

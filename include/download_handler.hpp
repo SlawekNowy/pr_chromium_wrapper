@@ -25,6 +25,7 @@ namespace cef
 			int32_t percentageComplete = 0;
 			State state = State::Downloading;
 		};
+		virtual ~WebDownloadHandler() override;
 		virtual void OnBeforeDownload(
 			CefRefPtr<CefBrowser> browser,CefRefPtr<CefDownloadItem> download_item,
 			const CefString& suggested_name,CefRefPtr<CefBeforeDownloadCallback> callback

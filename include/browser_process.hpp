@@ -10,6 +10,7 @@ namespace cef
 	{
 	public:
 		BrowserProcess();
+		virtual ~BrowserProcess() override;
 		virtual CefRefPtr<CefRenderProcessHandler> GetRenderProcessHandler() override;
 	private:
 		IMPLEMENT_REFCOUNTING(BrowserProcess);

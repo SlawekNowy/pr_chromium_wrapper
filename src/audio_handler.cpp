@@ -1,6 +1,27 @@
 #include "audio_handler.hpp"
 #include <iostream>
 
+cef::WebLifeSpanHandler::~WebLifeSpanHandler()
+{
+	std::cout<<"WebLifeSpanHandler destroyed!"<<std::endl;
+}
+void cef::WebLifeSpanHandler::OnAfterCreated(CefRefPtr<CefBrowser> browser)
+{
+	m_afterCreated = true;
+	std::cout<<"OnAfterCreated!"<<std::endl;
+}
+void cef::WebLifeSpanHandler::OnBeforeClose(CefRefPtr<CefBrowser> browser)
+{
+	m_beforeClose = true;
+	std::cout<<"OnBeforeClose!"<<std::endl;
+}
+
+///
+
+cef::WebAudioHandler::~WebAudioHandler()
+{
+	std::cout<<"WebAudioHandler destroyed!"<<std::endl;
+}
 bool cef::WebAudioHandler::GetAudioParameters(CefRefPtr<CefBrowser> browser,CefAudioParameters& params)
 {
 	return true;
