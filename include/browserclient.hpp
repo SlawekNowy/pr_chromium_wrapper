@@ -19,6 +19,7 @@ public:
 	virtual CefRefPtr<CefAudioHandler> GetAudioHandler() override;
 	virtual CefRefPtr<CefDownloadHandler> GetDownloadHandler() override;
 	virtual CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override;
+	virtual CefRefPtr<CefDisplayHandler> GetDisplayHandler() override;
 
 	virtual bool OnProcessMessageReceived(
 		CefRefPtr<CefBrowser> browser,
@@ -42,6 +43,7 @@ private:
 	CefRefPtr<CefAudioHandler> m_audioHandler;
 	CefRefPtr<CefDownloadHandler> m_downloadHandler;
 	CefRefPtr<CefLifeSpanHandler> m_lifeSpanHandler;
+	CefRefPtr<CefDisplayHandler> m_displayHandler;
 	void *m_userData = nullptr;
 	bool m_bPageLoadedSuccessfully = false;
 	bool m_bPageLoadingStarted = false;

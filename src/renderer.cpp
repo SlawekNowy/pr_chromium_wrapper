@@ -3,6 +3,7 @@
 #include "browser_render_process_handler.hpp"
 #include "browser_load_handler.hpp"
 #include "browserclient.hpp"
+#include "display_handler.hpp"
 #include <atlstr.h>
 #pragma optimize("",off)
 WebRenderHandler::WebRenderHandler(
@@ -267,6 +268,14 @@ extern "C"
 	DLL_PR_CHROMIUM void pr_chromium_browser_client_set_download_location(cef::CWebBrowserClient *browserClient,const char *location)
 	{
 		static_cast<cef::WebDownloadHandler*>((*browserClient)->GetDownloadHandler().get())->SetDownloadLocation(location);
+	}
+	DLL_PR_CHROMIUM void pr_chromium_browser_client_set_on_address_change_callback(
+		cef::CWebBrowserClient *browserClient,void(*onAddressChange)(cef::CWebBrowserClient*,const char*)
+	)
+	{
+		static_cast<cef::WebDisplayHandler*>((*browserClient)->GetDisplayHandler().get())->SetOnAddressChangeCallback([browserClient,onAddressChange](std::string addr) {
+			onAddressChange(browserClient,addr.c_str());
+		});
 	}
 
 	DLL_PR_CHROMIUM cef::CWebBrowser* pr_chromium_browser_create(cef::CWebBrowserClient *browserClient,const char *initialUrl)

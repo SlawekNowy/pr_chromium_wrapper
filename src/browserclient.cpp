@@ -1,4 +1,5 @@
 #include "browserclient.hpp"
+#include "display_handler.hpp"
 #include "renderer.hpp"
 
 #include <iostream>
@@ -7,7 +8,9 @@ WebBrowserClient::WebBrowserClient(
 	cef::WebDownloadHandler *dlHandler
 )
 	: m_renderHandler{renderHandler},m_audioHandler{audioHandler},m_downloadHandler{dlHandler},m_lifeSpanHandler{lifeSpanHandler}
-{}
+{
+	m_displayHandler = new cef::WebDisplayHandler{};
+}
 WebBrowserClient::~WebBrowserClient()
 {
 	std::cout<<"WebBrowserClient destroyed!"<<std::endl;
@@ -33,6 +36,7 @@ CefRefPtr<CefRenderHandler> WebBrowserClient::GetRenderHandler() {return m_rende
 CefRefPtr<CefAudioHandler> WebBrowserClient::GetAudioHandler() {return m_audioHandler;}
 CefRefPtr<CefDownloadHandler> WebBrowserClient::GetDownloadHandler() {return m_downloadHandler;}
 CefRefPtr<CefLifeSpanHandler> WebBrowserClient::GetLifeSpanHandler() {return m_lifeSpanHandler;}
+CefRefPtr<CefDisplayHandler> WebBrowserClient::GetDisplayHandler() {return m_displayHandler;}
 
 bool WebBrowserClient::HasPageLoadingStarted() const {return m_bPageLoadingStarted;}
 bool WebBrowserClient::WasPageLoadedSuccessfully() const {return m_bPageLoadedSuccessfully;}
