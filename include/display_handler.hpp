@@ -12,6 +12,10 @@ namespace cef
 	public:
 		virtual ~WebDisplayHandler() override {}
 		virtual void OnAddressChange(CefRefPtr<CefBrowser> browser,CefRefPtr<CefFrame> frame,const CefString& url) override;
+		virtual bool OnConsoleMessage(
+			CefRefPtr<CefBrowser> browser,cef_log_severity_t level,const CefString& message,
+			const CefString& source,int line
+		) override;
 		void SetOnAddressChangeCallback(std::function<void(std::string)> onAddressChange);
 		IMPLEMENT_REFCOUNTING(WebDisplayHandler);
 	private:

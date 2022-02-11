@@ -4,6 +4,7 @@
 #include "browser_load_handler.hpp"
 #include "browserclient.hpp"
 #include "display_handler.hpp"
+#include <include/cef_parser.h>
 #include <atlstr.h>
 #pragma optimize("",off)
 WebRenderHandler::WebRenderHandler(
@@ -61,7 +62,7 @@ void WebRenderHandler::OnPaint(CefRefPtr<CefBrowser> browser,PaintElementType ty
 		return;
 	auto host = browser->GetHost();
 	auto *client = static_cast<WebBrowserClient*>(host->GetClient().get());
-	auto bLoaded = (client != nullptr && client->HasPageLoadingStarted()) ? true : false;
+	auto bLoaded = (client != nullptr); // (client != nullptr && client->HasPageLoadingStarted()) ? true : false;
 	if(bLoaded == false)
 		return;
 	auto *srcPtr = static_cast<const uint8_t*>(buffer);
@@ -123,6 +124,8 @@ static bool initialize_chromium(bool subProcess,const char *pathToSubProcess,con
 	CefSettings settings {};
 	settings.windowless_rendering_enabled = true;
 	settings.multi_threaded_message_loop = false;
+	settings.uncaught_exception_stack_size = 1; // Required for CefRenderProcessHandler::OnUncaughtException callback
+	// CefString(&settings.user_agent).FromString("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:72.0) Gecko/20100101 Firefox/72.0");
 	// settings.user_agent
 	// settings.user_agent_product
 	CefString(&settings.cache_path).FromASCII(cachePath);
@@ -206,6 +209,29 @@ extern "C"
 	{
 		CefDoMessageLoopWork();
 	}
+	DLL_PR_CHROMIUM bool pr_chromium_parse_url(const char *url,void(*r)(void*,const char*,const char*,const char*,const char*,const char*,const char*,const char*,const char*,const char*,const char*),void *userData)
+	{
+		CefURLParts parts;
+		if(!CefParseURL(url,parts))
+			return false;
+		auto toAscii = [](cef_string_t &str) -> std::string {
+			return CefString{str.str,str.length}.ToString();
+		};
+		r(
+			userData,
+			toAscii(parts.host).c_str(),
+			toAscii(parts.fragment).c_str(),
+			toAscii(parts.password).c_str(),
+			toAscii(parts.origin).c_str(),
+			toAscii(parts.path).c_str(),
+			toAscii(parts.port).c_str(),
+			toAscii(parts.query).c_str(),
+			toAscii(parts.scheme).c_str(),
+			toAscii(parts.spec).c_str(),
+			toAscii(parts.username).c_str()
+		);
+		return true;
+	}
 	DLL_PR_CHROMIUM cef::CWebRenderHandler* pr_chromium_render_handler_create(
 		void(*fGetRootScreenRect)(cef::CWebRenderHandler*,int&,int&,int&,int&),void(*fGetViewRect)(cef::CWebRenderHandler*,int&,int&,int&,int&),void(*fGetScreenPoint)(cef::CWebRenderHandler*,int,int,int&,int&)
 	)
@@ -275,6 +301,38 @@ extern "C"
 	{
 		static_cast<cef::WebDisplayHandler*>((*browserClient)->GetDisplayHandler().get())->SetOnAddressChangeCallback([browserClient,onAddressChange](std::string addr) {
 			onAddressChange(browserClient,addr.c_str());
+		});
+	}
+	DLL_PR_CHROMIUM void pr_chromium_browser_client_set_on_loading_state_change(
+		cef::CWebBrowserClient *browserClient,void(*onLoadingStateChange)(cef::CWebBrowserClient*,bool,bool,bool)
+	)
+	{
+		static_cast<cef::BrowserLoadHandler*>((*browserClient)->GetLoadHandler().get())->SetOnLoadingStateChange([browserClient,onLoadingStateChange](bool isLoading,bool canGoBack,bool canGoForward) {
+			onLoadingStateChange(browserClient,isLoading,canGoBack,canGoForward);
+		});
+	}
+	DLL_PR_CHROMIUM void pr_chromium_browser_client_set_on_load_start(
+		cef::CWebBrowserClient *browserClient,void(*onLoadStart)(cef::CWebBrowserClient*,int)
+	)
+	{
+		static_cast<cef::BrowserLoadHandler*>((*browserClient)->GetLoadHandler().get())->SetOnLoadStart([browserClient,onLoadStart](CefLoadHandler::TransitionType transitionType) {
+			onLoadStart(browserClient,transitionType);
+		});
+	}
+	DLL_PR_CHROMIUM void pr_chromium_browser_client_set_on_load_end(
+		cef::CWebBrowserClient *browserClient,void(*onLoadEnd)(cef::CWebBrowserClient*,int)
+	)
+	{
+		static_cast<cef::BrowserLoadHandler*>((*browserClient)->GetLoadHandler().get())->SetOnLoadStart([browserClient,onLoadEnd](int httpStatusCode) {
+			onLoadEnd(browserClient,httpStatusCode);
+		});
+	}
+	DLL_PR_CHROMIUM void pr_chromium_browser_client_set_on_load_error(
+		cef::CWebBrowserClient *browserClient,void(*onLoadError)(cef::CWebBrowserClient*,int,const char*,const char*)
+	)
+	{
+		static_cast<cef::BrowserLoadHandler*>((*browserClient)->GetLoadHandler().get())->SetOnLoadError([browserClient,onLoadError](CefLoadHandler::ErrorCode errorCode,const CefString& errorText,const CefString& failedUrl) {
+			onLoadError(browserClient,errorCode,errorText.ToString().c_str(),failedUrl.ToString().c_str());
 		});
 	}
 

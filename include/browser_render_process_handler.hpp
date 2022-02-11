@@ -14,6 +14,13 @@ namespace cef
 		virtual void OnContextCreated(CefRefPtr<CefBrowser> browser,CefRefPtr<CefFrame> frame,CefRefPtr<CefV8Context> context) override;
 		virtual void OnWebKitInitialized() override;
 		virtual CefRefPtr<CefLoadHandler> GetLoadHandler() override;
+		virtual void OnUncaughtException(
+			CefRefPtr<CefBrowser> browser,
+			CefRefPtr<CefFrame> frame,
+			CefRefPtr<CefV8Context> context,
+			CefRefPtr<CefV8Exception> exception,
+			CefRefPtr<CefV8StackTrace> stackTrace
+		) override;
 		CefRefPtr<CefV8Handler> GetV8Handler();
 		CefRefPtr<CefV8Context> GetContext();
 	private:

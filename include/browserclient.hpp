@@ -4,6 +4,7 @@
 #include <include/cef_client.h>
 #include "audio_handler.hpp"
 #include "download_handler.hpp"
+#include "browser_load_handler.hpp"
 
 class WebRenderHandler;
 class WebBrowserClient
@@ -20,6 +21,7 @@ public:
 	virtual CefRefPtr<CefDownloadHandler> GetDownloadHandler() override;
 	virtual CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override;
 	virtual CefRefPtr<CefDisplayHandler> GetDisplayHandler() override;
+	virtual CefRefPtr<CefLoadHandler> GetLoadHandler() override;
 
 	virtual bool OnProcessMessageReceived(
 		CefRefPtr<CefBrowser> browser,
@@ -44,6 +46,7 @@ private:
 	CefRefPtr<CefDownloadHandler> m_downloadHandler;
 	CefRefPtr<CefLifeSpanHandler> m_lifeSpanHandler;
 	CefRefPtr<CefDisplayHandler> m_displayHandler;
+	CefRefPtr<CefLoadHandler> m_loadHandler;
 	void *m_userData = nullptr;
 	bool m_bPageLoadedSuccessfully = false;
 	bool m_bPageLoadingStarted = false;
