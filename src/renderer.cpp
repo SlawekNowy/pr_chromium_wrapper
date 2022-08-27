@@ -15,11 +15,7 @@ WebRenderHandler::WebRenderHandler(
 )
 	: m_process(process),m_fGetRootScreenRect{fGetRootScreenRect},m_fGetViewRect{fGetViewRect},m_fGetScreenPoint{fGetScreenPoint}
 {}
-#include <iostream>
-WebRenderHandler::~WebRenderHandler()
-{
-	std::cout<<"WebRenderHandler destroyed!"<<std::endl;
-}
+WebRenderHandler::~WebRenderHandler() {}
 bool WebRenderHandler::GetRootScreenRect(CefRefPtr<CefBrowser> browser,CefRect &rect)
 {
 	int x,y,w,h;
@@ -431,7 +427,6 @@ extern "C"
 		default:
 			return;
 		}
-		std::cout<<"Event Mouse Click: "<<x<<","<<y<<btType<<","<<mouseUp<<","<<clickCount<<std::endl;
 		(*browser)->GetHost()->SendMouseClickEvent(ev,cefBtType,mouseUp,clickCount);
 	}
 	DLL_PR_CHROMIUM void pr_chromium_browser_send_event_key(cef::CWebBrowser *browser,char c,int systemKey,int nativeKeyCode,bool pressed,cef::Modifier mods)
@@ -443,7 +438,6 @@ extern "C"
 		ev.native_key_code = nativeKeyCode;
 		ev.windows_key_code = nativeKeyCode;
 		ev.unmodified_character = systemKey;
-		std::cout<<"Event Key: "<<c<<","<<nativeKeyCode<<","<<systemKey<<","<<pressed<<","<<ev.modifiers<<std::endl;
 		(*browser)->GetHost()->SendKeyEvent(ev);
 	}
 	DLL_PR_CHROMIUM void pr_chromium_browser_send_event_char(cef::CWebBrowser *browser,char c,cef::Modifier mods)
@@ -455,7 +449,6 @@ extern "C"
 		ev.native_key_code = c;
 		ev.windows_key_code = c;
 		ev.unmodified_character = c;
-		std::cout<<"Event Char: "<<c<<","<<ev.modifiers<<std::endl;
 		(*browser)->GetHost()->SendKeyEvent(ev);
 	}
 	DLL_PR_CHROMIUM void pr_chromium_browser_send_event_mouse_wheel(cef::CWebBrowser *browser,int x,int y,float deltaX,float deltaY)
@@ -463,7 +456,6 @@ extern "C"
 		CefMouseEvent ev {};
 		ev.x = x;
 		ev.y = y;
-		std::cout<<"Event Mouse Wheel: "<<x<<","<<y<<","<<deltaX<<","<<deltaY<<std::endl;
 		(*browser)->GetHost()->SendMouseWheelEvent(ev,deltaX *10.f,deltaY *10.f);
 	}
 	DLL_PR_CHROMIUM void pr_chromium_browser_set_focus(cef::CWebBrowser *browser,bool focus) {(*browser)->GetHost()->SetFocus(focus);}

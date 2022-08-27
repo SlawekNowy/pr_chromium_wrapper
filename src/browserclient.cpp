@@ -12,10 +12,7 @@ WebBrowserClient::WebBrowserClient(
 	m_displayHandler = new cef::WebDisplayHandler{};
 	m_loadHandler = new cef::BrowserLoadHandler{};
 }
-WebBrowserClient::~WebBrowserClient()
-{
-	std::cout<<"WebBrowserClient destroyed!"<<std::endl;
-}
+WebBrowserClient::~WebBrowserClient() {}
 bool WebBrowserClient::OnProcessMessageReceived(
 	CefRefPtr<CefBrowser> browser,
 	CefRefPtr<CefFrame> frame,
@@ -24,7 +21,7 @@ bool WebBrowserClient::OnProcessMessageReceived(
 )
 {
 	auto msgName = message->GetName().ToString();
-	std::cout<<"ProcessMessage: "<<msgName<<std::endl;
+	std::cout<<"Chromium Process Message: "<<msgName<<std::endl;
 	// if(msgName == "LoadStart")
 	// 	SetPageLoadingStarted(true);
 	// else if(msgName == "LoadComplete")

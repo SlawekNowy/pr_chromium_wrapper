@@ -1,14 +1,10 @@
 #include "browser_load_handler.hpp"
 #include "browserclient.hpp"
 
-#include <iostream>
 cef::BrowserLoadHandler::BrowserLoadHandler()
 	: CefLoadHandler{}
 {}
-cef::BrowserLoadHandler::~BrowserLoadHandler()
-{
-	std::cout<<"BrowserLoadHandler destroyed!"<<std::endl;
-}
+cef::BrowserLoadHandler::~BrowserLoadHandler() {}
 void cef::BrowserLoadHandler::SetOnLoadingStateChange(std::function<void(bool,bool,bool)> onLoadingStateChange) {m_onLoadingStateChange = onLoadingStateChange;}
 void cef::BrowserLoadHandler::SetOnLoadStart(std::function<void(TransitionType)> onLoadStart) {m_onLoadStart = onLoadStart;}
 void cef::BrowserLoadHandler::SetOnLoadEnd(std::function<void(int)> onLoadEnd) {m_onLoadEnd = onLoadEnd;}

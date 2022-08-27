@@ -1,10 +1,7 @@
 #include "download_handler.hpp"
 #include <iostream>
 
-cef::WebDownloadHandler::~WebDownloadHandler()
-{
-	std::cout<<"WebDownloadHandler destroyed!"<<std::endl;
-}
+cef::WebDownloadHandler::~WebDownloadHandler() {}
 void cef::WebDownloadHandler::OnBeforeDownload(
 	CefRefPtr<CefBrowser> browser,
 	CefRefPtr<CefDownloadItem> download_item,

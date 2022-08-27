@@ -9,10 +9,7 @@ namespace cef
 };
 
 #include <iostream>
-cef::BrowserRenderProcessHandler::~BrowserRenderProcessHandler()
-{
-	std::cout<<"BrowserRenderProcessHandler destroyed!"<<std::endl;
-}
+cef::BrowserRenderProcessHandler::~BrowserRenderProcessHandler() {}
 
 void cef::BrowserRenderProcessHandler::OnUncaughtException(
 	CefRefPtr<CefBrowser> browser,
