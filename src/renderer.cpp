@@ -5,7 +5,7 @@
 #include "browserclient.hpp"
 #include "display_handler.hpp"
 #include <include/cef_parser.h>
-#include <atlstr.h>
+//#include <atlstr.h>
 #pragma optimize("",off)
 WebRenderHandler::WebRenderHandler(
 	cef::BrowserProcess *process,
@@ -149,8 +149,12 @@ namespace cef
 }
 
 
-#include <iostream>
+#ifdef __linux__
+#define DLL_PR_CHROMIUM __attribute__((visibility("default")))
+#else
 #define DLL_PR_CHROMIUM __declspec(dllexport)
+#endif
+
 extern "C"
 {
 	DLL_PR_CHROMIUM void pr_chromium_register_javascript_function(const char *name,cef::JSValue*(* const fCallback)(cef::JSValue*,uint32_t))
@@ -335,7 +339,7 @@ extern "C"
 	DLL_PR_CHROMIUM cef::CWebBrowser* pr_chromium_browser_create(cef::CWebBrowserClient *browserClient,const char *initialUrl)
 	{
 		CefWindowInfo windowInfo;
-		windowInfo.SetAsWindowless(nullptr);
+        windowInfo.SetAsWindowless(0);
 		CefBrowserSettings browserSettings;
 		auto browser = CefRefPtr<CefBrowser>{CefBrowserHost::CreateBrowserSync(windowInfo,*browserClient,initialUrl,browserSettings,nullptr,nullptr)};
 		auto *pBrowser = new cef::CWebBrowser{browser};

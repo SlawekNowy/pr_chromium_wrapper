@@ -19,7 +19,7 @@ void cef::BrowserRenderProcessHandler::OnUncaughtException(
 	CefRefPtr<CefV8StackTrace> stackTrace
 )
 {
-	std::cout<<"OnUncaughtException: "<<exception->GetMessageW().ToString()<<std::endl;
+    std::cout<<"OnUncaughtException: "<<exception->GetMessage().ToString()<<std::endl;
 }
 
 CefRefPtr<CefV8Handler> cef::BrowserRenderProcessHandler::GetV8Handler() {return m_v8Handler;}
