@@ -4,6 +4,8 @@
 #include "browser_load_handler.hpp"
 #include "browserclient.hpp"
 #include "display_handler.hpp"
+//#include "zygote_handler.hpp"
+#include <cstring>
 #include <include/cef_parser.h>
 //#include <atlstr.h>
 #pragma optimize("",off)
@@ -100,38 +102,69 @@ void WebRenderHandler::OnImeCompositionRangeChanged(CefRefPtr<CefBrowser> browse
 
 }
 
-static CefRefPtr<cef::BrowserProcess> g_process = nullptr;
-static bool initialize_chromium(bool subProcess,const char *pathToSubProcess,const char *cachePath)
+static CefRefPtr<CefApp> g_process = nullptr;
+static bool initialize_chromium(bool subProcess,const char *pathToSubProcess,const char *cachePath, int subprocessArgc =0,char** subprocessArgv=nullptr)
 {
 	static auto initialized = false;
 	if(initialized == true)
 		return (g_process != nullptr) ? true : false;
 	initialized = true;
-	g_process = new cef::BrowserProcess();
-	CefMainArgs args {};
+#if 0
+    if(subProcess)
+    {
+        g_process = new cef::BrowserProcess();
+    } else
+    {
+        g_process = new cef::ZygoteProcess();
+    }
+#else
+    g_process = new cef::BrowserProcess();
+#endif
+    CefMainArgs args;
 	if(subProcess)
-	{
+    {
+        //we're subprocess; passthrough.
+#ifndef _WIN32
+        args = CefMainArgs(subprocessArgc,subprocessArgv);
+#endif
 		auto result = CefExecuteProcess(args,g_process,nullptr); // ???
 		if(result > 0)
 			return false;
 		return true;
 	}
 
+
+#ifndef _WIN32
+    //since argv[0] is an executable, "reconstruct" the argv to hold it.
+    char* exeArg = new char[std::strlen(pathToSubProcess)+1];
+    std::strncpy(exeArg,pathToSubProcess,std::strlen(pathToSubProcess)+1);
+    char** rawArgs = new char*[1]{exeArg};
+    args = CefMainArgs(1,rawArgs);
+#endif
 	CefSettings settings {};
-	settings.windowless_rendering_enabled = true;
-	settings.multi_threaded_message_loop = false;
-	settings.uncaught_exception_stack_size = 1; // Required for CefRenderProcessHandler::OnUncaughtException callback
+    settings.windowless_rendering_enabled = true;
+    settings.multi_threaded_message_loop = false;
+    settings.uncaught_exception_stack_size = 1; // Required for CefRenderProcessHandler::OnUncaughtException callback
 	// CefString(&settings.user_agent).FromString("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:72.0) Gecko/20100101 Firefox/72.0");
 	// settings.user_agent
-	// settings.user_agent_product
+    // settings.user_agent_product
 	CefString(&settings.cache_path).FromASCII(cachePath);
 	CefString(&settings.browser_subprocess_path).FromASCII(pathToSubProcess);
-	settings.no_sandbox = true;
-	if(CefInitialize(args,settings,g_process,nullptr) == false)
+    settings.no_sandbox = true;
+    if(CefInitialize(args,settings,g_process,nullptr) == false)
 	{
 		g_process = nullptr;
+#ifndef _WIN32
+        delete[] rawArgs;
+        delete[] exeArg;
+#endif
 		return false;
 	}
+    //delete argsRaw;
+ #ifndef _WIN32
+    delete[] rawArgs;
+    delete[] exeArg;
+#endif
 	return true;
 }
 #include <thread>
@@ -188,6 +221,7 @@ namespace cef
 	};
 };
 #include <thread>
+#include <zygote_handler.hpp>
 extern "C"
 {
 	DLL_PR_CHROMIUM bool pr_chromium_initialize(const char *pathToSubProcess,const char *cachePath)
@@ -198,9 +232,9 @@ extern "C"
 	{
 		close_chromium();
 	}
-	DLL_PR_CHROMIUM bool pr_chromium_subprocess()
+    DLL_PR_CHROMIUM bool pr_chromium_subprocess(int subprocessArgc,char** subprocessArgv)
 	{
-		if(initialize_chromium(true,"","") == false)
+        if(initialize_chromium(true,"","",subprocessArgc,subprocessArgv) == false)
 			return false;
 		close_chromium();
 		return true;
