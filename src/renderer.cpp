@@ -123,7 +123,11 @@ static bool initialize_chromium(bool subProcess, const char *pathToSubProcess, c
 
 	g_process = new cef::BrowserProcess();
 
+#ifdef __linux__
 	CefMainArgs args(subprocessArgc, subprocessArgv);
+#else
+	CefMainArgs args {};
+#endif
 	if(subProcess) {
 		//we're subprocess; passthrough.
 
@@ -137,7 +141,6 @@ static bool initialize_chromium(bool subProcess, const char *pathToSubProcess, c
 	// CEF doesn't like PRIME offloading, run without it.
 	PRIMEEnvs envs;
 	unset_prime_env(envs);
-
 #endif
 	CefSettings settings {};
 	settings.windowless_rendering_enabled = true;
@@ -150,13 +153,15 @@ static bool initialize_chromium(bool subProcess, const char *pathToSubProcess, c
 	CefString(&settings.browser_subprocess_path).FromASCII(pathToSubProcess);
 	settings.no_sandbox = true;
 	if(CefInitialize(args, settings, g_process, nullptr) == false) {
-
+#if defined(__linux__)
 		restore_prime_env(envs);
+#endif
 		return false;
 	}
+#if defined(__linux__)
 	//delete argsRaw;
-
 	restore_prime_env(envs);
+#endif
 	return true;
 }
 #include <thread>
