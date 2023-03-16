@@ -87,7 +87,7 @@ if(MSVC)
 	target_compile_definitions(${PROJ_NAME} PRIVATE -D_UNICODE -DUNICODE)
 	target_compile_options(${PROJ_NAME} PUBLIC "/MT")
 else()
-	target_link_options(${PROJ_NAME} PRIVATE "LINKER:--strip-all")
+        #target_link_options(${PROJ_NAME} PRIVATE "LINKER:--strip-all") #This strips all debug symbols. Somehow.
 endif()
 if(WIN32)
 	target_compile_options(${PROJ_NAME} PRIVATE /wd4251)

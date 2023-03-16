@@ -13,6 +13,12 @@ CefRefPtr<CefRenderProcessHandler> cef::BrowserProcess::GetRenderProcessHandler(
 
 void cef::BrowserProcess::OnBeforeCommandLineProcessing(const CefString& process_type,CefRefPtr<CefCommandLine> command_line)
 {
-	command_line->AppendSwitch("off-screen-rendering-enabled");
+    command_line->AppendSwitch("off-screen-rendering-enabled");
+   //command_line->AppendSwitch("no-zygote"); //for Linux?, this would disable zygote
+    command_line->AppendSwitch("in-process-gpu");
+    command_line->AppendSwitch("disable-gpu-sandbox");
+    //--password-store=basic
+    command_line->AppendSwitchWithValue("password-store","basic");
+
 }
 #pragma optimize("",on)

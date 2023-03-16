@@ -12,10 +12,10 @@
 
 extern "C"
 {
-	DLL_PR_CHROMIUM bool pr_chromium_subprocess();
+    DLL_PR_CHROMIUM bool pr_chromium_subprocess(int,char**);
 };
 
 int main(int argc,char *argv[])
 {
-	return pr_chromium_subprocess() ? EXIT_SUCCESS : EXIT_FAILURE;
+    return pr_chromium_subprocess(argc,argv) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
