@@ -114,16 +114,17 @@ struct PRIMEEnvs {
     std::string renderOffloadEnv;
     std::string vkLayerEnv;
     std::string glxVendorLibName;
+    //TODO: Check if AMD offloading causes any bugs.
 };
 static void unset_prime_env(PRIMEEnvs& envs){
     char *holderEnv = getenv("__NV_PRIME_RENDER_OFFLOAD");
-    if(!holderEnv)
+    if(holderEnv)
         envs.renderOffloadEnv = std::string(holderEnv);
     holderEnv = getenv("__VK_LAYER_NV_optimus");
-    if(!holderEnv)
+    if(holderEnv)
         envs.vkLayerEnv = std::string(holderEnv);
     holderEnv = getenv("__GLX_VENDOR_LIBRARY_NAME");
-    if(!holderEnv)
+    if(holderEnv)
         envs.glxVendorLibName = std::string(holderEnv);
     unsetenv("__NV_PRIME_RENDER_OFFLOAD");
     unsetenv("__VK_LAYER_NV_optimus");
