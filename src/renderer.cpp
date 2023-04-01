@@ -83,40 +83,6 @@ static CefRefPtr<CefApp> g_process = nullptr;
 #if defined(__linux__)
 
 struct PRIMEEnvs {
-	std::string renderOffloadEnv;
-	std::string vkLayerEnv;
-	std::string glxVendorLibName;
-};
-static void unset_prime_env(PRIMEEnvs &envs)
-{
-	char *holderEnv = getenv("__NV_PRIME_RENDER_OFFLOAD");
-	if(!holderEnv)
-		envs.renderOffloadEnv = std::string(holderEnv);
-	holderEnv = getenv("__VK_LAYER_NV_optimus");
-	if(!holderEnv)
-		envs.vkLayerEnv = std::string(holderEnv);
-	holderEnv = getenv("__GLX_VENDOR_LIBRARY_NAME");
-	if(!holderEnv)
-		envs.glxVendorLibName = std::string(holderEnv);
-	unsetenv("__NV_PRIME_RENDER_OFFLOAD");
-	unsetenv("__VK_LAYER_NV_optimus");
-	unsetenv("__GLX_VENDOR_LIBRARY_NAME");
-}
-static void restore_prime_env(PRIMEEnvs &envs)
-{
-	if(!envs.renderOffloadEnv.empty())
-		setenv("__NV_PRIME_RENDER_OFFLOAD", envs.renderOffloadEnv.c_str(), 1);
-	if(!envs.vkLayerEnv.empty())
-		setenv("__VK_LAYER_NV_optimus", envs.vkLayerEnv.c_str(), 1);
-	if(!envs.glxVendorLibName.empty())
-		setenv("__GLX_VENDOR_LIBRARY_NAME", envs.glxVendorLibName.c_str(), 1);
-}
-
-static CefRefPtr<CefApp> g_process = nullptr;
-
-#if defined(__linux__)
-
-struct PRIMEEnvs {
     std::string renderOffloadEnv;
     std::string vkLayerEnv;
     std::string glxVendorLibName;
