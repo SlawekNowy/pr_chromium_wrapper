@@ -7,14 +7,9 @@
 #include "browser_load_handler.hpp"
 
 class WebRenderHandler;
-class WebBrowserClient
-	: public CefClient
-{
-public:
-	WebBrowserClient(
-		WebRenderHandler *renderHandler,cef::WebAudioHandler *audioHandler,cef::WebLifeSpanHandler *lifeSpanHandler,
-		cef::WebDownloadHandler *dlHandler
-	);
+class WebBrowserClient : public CefClient {
+  public:
+	WebBrowserClient(WebRenderHandler *renderHandler, cef::WebAudioHandler *audioHandler, cef::WebLifeSpanHandler *lifeSpanHandler, cef::WebDownloadHandler *dlHandler);
 	virtual ~WebBrowserClient() override;
 	virtual CefRefPtr<CefRenderHandler> GetRenderHandler() override;
 	virtual CefRefPtr<CefAudioHandler> GetAudioHandler() override;
@@ -23,24 +18,19 @@ public:
 	virtual CefRefPtr<CefDisplayHandler> GetDisplayHandler() override;
 	virtual CefRefPtr<CefLoadHandler> GetLoadHandler() override;
 
-	virtual bool OnProcessMessageReceived(
-		CefRefPtr<CefBrowser> browser,
-		CefRefPtr<CefFrame> frame,
-		CefProcessId source_process,
-		CefRefPtr<CefProcessMessage> message
-	) override;
+	virtual bool OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefProcessId source_process, CefRefPtr<CefProcessMessage> message) override;
 
 	bool WasPageLoadedSuccessfully() const;
 	bool HasPageLoadingStarted() const;
-	
+
 	void SetPageLoadedSuccessfully(bool b);
 	void SetPageLoadingStarted(bool b);
 
-	void SetUserData(void *userData) {m_userData = userData;}
-	void *GetUserData() {return m_userData;}
+	void SetUserData(void *userData) { m_userData = userData; }
+	void *GetUserData() { return m_userData; }
 
 	IMPLEMENT_REFCOUNTING(WebBrowserClient);
-private:
+  private:
 	CefRefPtr<CefRenderHandler> m_renderHandler;
 	CefRefPtr<CefAudioHandler> m_audioHandler;
 	CefRefPtr<CefDownloadHandler> m_downloadHandler;
