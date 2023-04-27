@@ -83,38 +83,40 @@ static CefRefPtr<CefApp> g_process = nullptr;
 #if defined(__linux__)
 
 struct PRIMEEnvs {
-	std::string renderOffloadEnv;
-	std::string vkLayerEnv;
-	std::string glxVendorLibName;
+    std::string renderOffloadEnv;
+    std::string vkLayerEnv;
+    std::string glxVendorLibName;
+    //TODO: Check if AMD offloading causes any bugs.
 };
-static void unset_prime_env(PRIMEEnvs &envs)
-{
-	char *holderEnv = getenv("__NV_PRIME_RENDER_OFFLOAD");
-	if(!holderEnv)
-		envs.renderOffloadEnv = std::string(holderEnv);
-	holderEnv = getenv("__VK_LAYER_NV_optimus");
-	if(!holderEnv)
-		envs.vkLayerEnv = std::string(holderEnv);
-	holderEnv = getenv("__GLX_VENDOR_LIBRARY_NAME");
-	if(!holderEnv)
-		envs.glxVendorLibName = std::string(holderEnv);
-	unsetenv("__NV_PRIME_RENDER_OFFLOAD");
-	unsetenv("__VK_LAYER_NV_optimus");
-	unsetenv("__GLX_VENDOR_LIBRARY_NAME");
+static void unset_prime_env(PRIMEEnvs& envs){
+    char *holderEnv = getenv("__NV_PRIME_RENDER_OFFLOAD");
+    if(holderEnv)
+        envs.renderOffloadEnv = std::string(holderEnv);
+    holderEnv = getenv("__VK_LAYER_NV_optimus");
+    if(holderEnv)
+        envs.vkLayerEnv = std::string(holderEnv);
+    holderEnv = getenv("__GLX_VENDOR_LIBRARY_NAME");
+    if(holderEnv)
+        envs.glxVendorLibName = std::string(holderEnv);
+    unsetenv("__NV_PRIME_RENDER_OFFLOAD");
+    unsetenv("__VK_LAYER_NV_optimus");
+    unsetenv("__GLX_VENDOR_LIBRARY_NAME");
 }
-static void restore_prime_env(PRIMEEnvs &envs)
-{
-	if(!envs.renderOffloadEnv.empty())
-		setenv("__NV_PRIME_RENDER_OFFLOAD", envs.renderOffloadEnv.c_str(), 1);
-	if(!envs.vkLayerEnv.empty())
-		setenv("__VK_LAYER_NV_optimus", envs.vkLayerEnv.c_str(), 1);
-	if(!envs.glxVendorLibName.empty())
-		setenv("__GLX_VENDOR_LIBRARY_NAME", envs.glxVendorLibName.c_str(), 1);
+static void restore_prime_env(PRIMEEnvs& envs){
+    if(!envs.renderOffloadEnv.empty())
+        setenv("__NV_PRIME_RENDER_OFFLOAD",envs.renderOffloadEnv.c_str(),1);
+    if(!envs.vkLayerEnv.empty())
+        setenv("__VK_LAYER_NV_optimus",envs.vkLayerEnv.c_str(),1);
+    if(!envs.glxVendorLibName.empty())
+        setenv("__GLX_VENDOR_LIBRARY_NAME",envs.glxVendorLibName.c_str(),1);
+
 }
+
+
 
 #endif
 
-static bool initialize_chromium(bool subProcess, const char *pathToSubProcess, const char *cachePath, int subprocessArgc = 0, char **subprocessArgv = nullptr)
+static bool initialize_chromium(bool subProcess,const char *pathToSubProcess,const char *cachePath, int subprocessArgc =0,char** subprocessArgv=nullptr)
 {
 	static auto initialized = false;
 	if(initialized == true)
@@ -137,18 +139,20 @@ static bool initialize_chromium(bool subProcess, const char *pathToSubProcess, c
 		return true;
 	}
 
+
 #if defined(__linux__)
-	// CEF doesn't like PRIME offloading, run without it.
-	PRIMEEnvs envs;
-	unset_prime_env(envs);
+    // CEF doesn't like PRIME offloading, run without it.
+    PRIMEEnvs envs;
+    unset_prime_env(envs);
+
 #endif
-	CefSettings settings {};
-	settings.windowless_rendering_enabled = true;
-	settings.multi_threaded_message_loop = false;
-	settings.uncaught_exception_stack_size = 1; // Required for CefRenderProcessHandler::OnUncaughtException callback
+    CefSettings settings {};
+    settings.windowless_rendering_enabled = true;
+    settings.multi_threaded_message_loop = false;
+    settings.uncaught_exception_stack_size = 1; // Required for CefRenderProcessHandler::OnUncaughtException callback
 	// CefString(&settings.user_agent).FromString("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:72.0) Gecko/20100101 Firefox/72.0");
 	// settings.user_agent
-	// settings.user_agent_product
+    // settings.user_agent_product
 	CefString(&settings.cache_path).FromASCII(cachePath);
 	CefString(&settings.browser_subprocess_path).FromASCII(pathToSubProcess);
 	settings.no_sandbox = true;
