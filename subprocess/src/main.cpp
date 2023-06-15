@@ -8,7 +8,10 @@
 #else
 #define DLL_PR_CHROMIUM __declspec(dllexport)
 
+// This will prevent the creation of a new window for every instance of the subprocess.
+// See https://stackoverflow.com/a/6882500/1879228
 #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+
 #endif
 
 extern "C" {
