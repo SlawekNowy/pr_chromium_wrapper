@@ -24,7 +24,7 @@ namespace cef {
 		virtual bool GetAudioParameters(CefRefPtr<CefBrowser> browser, CefAudioParameters &params) override;
 		virtual void OnAudioStreamStarted(CefRefPtr<CefBrowser> browser, const CefAudioParameters &params, int channels) override;
 
-		virtual void OnAudioStreamPacket(CefRefPtr<CefBrowser> browser, const float **data, int frames, int64 pts) override;
+		virtual void OnAudioStreamPacket(CefRefPtr<CefBrowser> browser, const float **data, int frames, int64_t pts) override;
 
 		virtual void OnAudioStreamStopped(CefRefPtr<CefBrowser> browser) override;
 

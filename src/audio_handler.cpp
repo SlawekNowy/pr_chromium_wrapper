@@ -12,7 +12,7 @@ bool cef::WebAudioHandler::GetAudioParameters(CefRefPtr<CefBrowser> browser, Cef
 
 void cef::WebAudioHandler::OnAudioStreamStarted(CefRefPtr<CefBrowser> browser, const CefAudioParameters &params, int channels) {}
 
-void cef::WebAudioHandler::OnAudioStreamPacket(CefRefPtr<CefBrowser> browser, const float **data, int frames, int64 pts) {}
+void cef::WebAudioHandler::OnAudioStreamPacket(CefRefPtr<CefBrowser> browser, const float **data, int frames, int64_t pts) {}
 
 void cef::WebAudioHandler::OnAudioStreamStopped(CefRefPtr<CefBrowser> browser) {}
 
