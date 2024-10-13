@@ -57,6 +57,9 @@ void WebRenderHandler::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType t
 		return;
 	auto *srcPtr = static_cast<const uint8_t *>(buffer);
 	auto *dstPtr = static_cast<uint8_t *>(m_imageData.dataPtr);
+	m_dirtyRects.reserve(m_dirtyRects.size() + dirtyRects.size());
+	for(auto &rect : dirtyRects)
+		m_dirtyRects.push_back({rect.x, rect.y, rect.width, rect.height});
 	constexpr uint8_t szPerPixel = 4u;
 	if(dirtyRects.size() == 1) {
 		auto &r = dirtyRects[0];
@@ -73,6 +76,9 @@ void WebRenderHandler::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType t
 		}
 	}
 }
+
+const std::vector<WebRenderHandler::Rect> &WebRenderHandler::GetDirtyRects() const { return m_dirtyRects; }
+void WebRenderHandler::ClearDirtyRects() { m_dirtyRects.clear(); }
 bool WebRenderHandler::StartDragging(CefRefPtr<CefBrowser> browser, CefRefPtr<CefDragData> drag_data, DragOperationsMask allowed_ops, int x, int y) { return false; }
 void WebRenderHandler::UpdateDragCursor(CefRefPtr<CefBrowser> browser, DragOperation operation) {}
 void WebRenderHandler::OnScrollOffsetChanged(CefRefPtr<CefBrowser> browser, double x, double y) {}
@@ -326,6 +332,13 @@ DLL_PR_CHROMIUM void *pr_chromium_browser_get_user_data(cef::CWebBrowser *browse
 DLL_PR_CHROMIUM void pr_chromium_browser_was_resized(cef::CWebBrowser *browser) { (*browser)->GetHost()->WasResized(); }
 
 DLL_PR_CHROMIUM void pr_chromium_render_handler_set_image_data(cef::CWebRenderHandler *renderHandler, void *ptr, uint32_t w, uint32_t h) { (*renderHandler)->SetImageData(ptr, w, h); }
+DLL_PR_CHROMIUM void pr_chromium_render_handler_get_dirty_rects(cef::CWebRenderHandler *renderHandler, const std::tuple<int, int, int, int> **rectsPtr, uint32_t &numRects)
+{
+	auto &rects = (*renderHandler)->GetDirtyRects();
+	numRects = rects.size();
+	*rectsPtr = rects.data();
+}
+DLL_PR_CHROMIUM void pr_chromium_render_handler_clear_dirty_rects(cef::CWebRenderHandler *renderHandler) { (*renderHandler)->ClearDirtyRects(); }
 // Browser
 DLL_PR_CHROMIUM void pr_chromium_browser_load_url(cef::CWebBrowser *browser, const char *url) { (*browser)->GetMainFrame()->LoadURL(url); }
 DLL_PR_CHROMIUM bool pr_chromium_browser_can_go_back(cef::CWebBrowser *browser) { return (*browser)->CanGoBack(); }
