@@ -2,7 +2,7 @@
 #include <iostream>
 
 cef::WebDownloadHandler::~WebDownloadHandler() {}
-void cef::WebDownloadHandler::OnBeforeDownload(CefRefPtr<CefBrowser> browser, CefRefPtr<CefDownloadItem> download_item, const CefString &suggested_name, CefRefPtr<CefBeforeDownloadCallback> callback)
+bool cef::WebDownloadHandler::OnBeforeDownload(CefRefPtr<CefBrowser> browser, CefRefPtr<CefDownloadItem> download_item, const CefString &suggested_name, CefRefPtr<CefBeforeDownloadCallback> callback)
 {
 	if(m_downloadLocation.empty()) {
 		callback->Continue("", false);
@@ -14,6 +14,7 @@ void cef::WebDownloadHandler::OnBeforeDownload(CefRefPtr<CefBrowser> browser, Ce
 		callback->Continue(filePath, false);
 		UpdateDownload(download_item->GetId(), {}, {}, &filePath);
 	}
+	return false; // Use default behavior
 }
 
 void cef::WebDownloadHandler::OnDownloadUpdated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefDownloadItem> download_item, CefRefPtr<CefDownloadItemCallback> callback)

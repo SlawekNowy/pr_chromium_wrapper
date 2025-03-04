@@ -10,7 +10,7 @@ pr_add_external_dependency(${PROJ_NAME} chromium LIBRARY PUBLIC)
 pr_add_external_dependency(${PROJ_NAME} libcef_dll_wrapper LIBRARY PUBLIC)
 
 if(MSVC)
-	target_compile_definitions(${PROJ_NAME} PRIVATE -D_UNICODE -DUNICODE)
+	target_compile_definitions(${PROJ_NAME} PRIVATE -D_UNICODE -DUNICODE -DNOMINMAX)
 	target_compile_options(${PROJ_NAME} PRIVATE "/MT")
 endif()
 
